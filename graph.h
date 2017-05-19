@@ -80,7 +80,5 @@ private:
     std::vector<std::vector<double>> weights;
     std::vector<double> betta;
     constexpr static double epsilon = 1.e-5;
-
-
 };
 #endif //TEMP_NIR_GRAPH_H

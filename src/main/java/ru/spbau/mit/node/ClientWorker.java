@@ -11,7 +11,14 @@ public class ClientWorker implements Runnable {
     }
 
     private double weightIn = 1.;
+
+    public boolean isClosed() {
+        return closed;
+    }
+
+    private boolean closed = false;
     private Socket client;
+
     private int port;
 
     ClientWorker(Socket client, int port) {
@@ -30,10 +37,13 @@ public class ClientWorker implements Runnable {
         }
 
         while (true) {
-//            System.out.println("clientWorker");
             try {
                 weightIn = in.nextDouble();
-                Thread.sleep(500);
+                Thread.sleep(100);
+                if (!in.hasNextDouble()) {
+                    closed = true;
+                    break;
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

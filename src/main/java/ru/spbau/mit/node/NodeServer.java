@@ -3,20 +3,32 @@ package ru.spbau.mit.node;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class NodeServer implements Runnable {
     private ServerSocket server;
+
+    public int getPort() {
+        return port;
+    }
+
     private int port;
+    private String hostName;
     private List<ClientWorker> inAdjList = new ArrayList<>();
 
-    public NodeServer(int port) {
+    public NodeServer(String hostName, int port) {
+        this.hostName = hostName;
         this.port = port;
     }
 
     public double totalInWeight() {
         double sum = 0.;
         for (ClientWorker inAdj: inAdjList) {
+            if (inAdj.isClosed()) {
+                inAdjList.remove(inAdj);
+                continue;
+            }
             sum += inAdj.getWeightIn();
         }
         return sum;

@@ -7,9 +7,18 @@ import java.net.UnknownHostException;
 
 public class NodeClient implements Runnable {
 
+    public String getHostName() {
+        return hostName;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
     private String hostName;
     private int port;
     private boolean send = true;
+    private boolean close = false;
 
     public double getWeightOut() {
         return weightOut;
@@ -34,6 +43,10 @@ public class NodeClient implements Runnable {
         this.port = port;
     }
 
+    public void setClose() {
+        close = true;
+    }
+
     @Override
     public void run() {
         PrintWriter out = null;
@@ -49,12 +62,11 @@ public class NodeClient implements Runnable {
             System.exit(1);
         }
 
-        while (true) {
+        while (!close) {
             while (!send);
-//                System.out.println("client");
             try {
                 out.print(weightOut);
-                Thread.sleep(500);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

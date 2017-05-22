@@ -1,36 +1,34 @@
 package ru.spbau.mit.node;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
-public class Node {
+public class Node implements Runnable {
     private static double epsilon = 1.e-10;
-    private int node;
     private double betta;
-    private int serverPort;
     private NodeServer server;
     private List<NodeClient> outAdjList = new ArrayList<>();
 
-    public Node(int node, int serverPort, double betta) {
-        this.node = node;
-        this.serverPort = serverPort;
-        this.betta = betta;
-        init();
+    public Node(String hostName, int serverPort) {
+        this.betta = new Random().nextDouble();
+        server = new NodeServer(hostName, serverPort);
+        Thread thread = new Thread(server);
+        thread.start();
     }
 
-    public void stop() {
+    public void update(HashMap<String, Integer> hosts) {
         for (NodeClient node: outAdjList) {
-            node.stop();
+            if(!hosts.containsKey(node.getHostName())) {
+                node.setClose();
+                outAdjList.remove(node);
+            }
         }
+        hosts.forEach(this::connectTo);
     }
 
-    public void start() {
-        for (NodeClient node: outAdjList) {
-            node.start();
-        }
-    }
-
-    public boolean updateWeight() {
+    private boolean updateWeight() {
         double totalInWeight = server.totalInWeight();
         int outDegree = outAdjList.size();
         boolean isChanged = false;
@@ -45,37 +43,46 @@ public class Node {
             outAdj.setWeightOut(newWeight);
             totalOutWeight += newWeight;
         }
-        System.out.println(node + " total in = " + totalInWeight
+        System.out.println(server.getPort() + " total in = " + totalInWeight
                             + " total out = " + totalOutWeight);
-        if (Math.abs(totalInWeight - totalOutWeight) < epsilon) {
-            System.out.println(node + " I'm balanced");
+        if (Math.abs(totalInWeight - totalOutWeight) < epsilon
+                && Math.abs(totalInWeight - 0.9) > epsilon) {
+            System.out.println("I'm balanced");
         }
         return isChanged;
     }
 
-    public int getServerPort() {
-        return serverPort;
-    }
-
-    private void init() {
-        server = new NodeServer(serverPort);
-        Thread thread = new Thread(server);
-        thread.start();
-    }
-
-//    public void serverJoin() {
-//        try {
-//            System.out.println(serverPort + " started");
-//            thread.join();
-//            System.out.println(serverPort + " started");
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    public void connectTo(String hostname, int port) {
+    private void connectTo(String hostname, int port) {
+        for (NodeClient node: outAdjList) {
+            if (node.getHostName().equals(hostname)) {
+                return;
+            }
+        }
         NodeClient client = new NodeClient(hostname, port);
         outAdjList.add(client);
         new Thread(client).start();
+    }
+
+    @Override
+    public void run() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        boolean is_changed = true;
+        while(true) {
+            outAdjList.forEach(NodeClient::stop);
+            if (!updateWeight()) {
+                is_changed = false;
+            }
+            outAdjList.forEach(NodeClient::start);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+//        System.out.println("update end");
     }
 }

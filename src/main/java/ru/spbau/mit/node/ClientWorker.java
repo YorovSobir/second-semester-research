@@ -28,9 +28,9 @@ public class ClientWorker implements Runnable {
 
     @Override
     public void run() {
-        Scanner in = null;
+        BufferedReader in = null;
         try {
-            in = new Scanner(client.getInputStream());
+            in = new BufferedReader(new InputStreamReader(client.getInputStream()));
         } catch (IOException e) {
             System.out.println("Read failed");
             System.exit(-1);
@@ -38,13 +38,14 @@ public class ClientWorker implements Runnable {
 
         while (true) {
             try {
-                weightIn = in.nextDouble();
+                weightIn = Double.parseDouble(in.readLine());
                 Thread.sleep(100);
-                if (!in.hasNextDouble()) {
-                    closed = true;
-                    break;
-                }
-            } catch (InterruptedException e) {
+                weightIn = 0.;
+//                if (!in.ready()) {
+//                    closed = true;
+//                    break;
+//                }
+            } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
             }
         }

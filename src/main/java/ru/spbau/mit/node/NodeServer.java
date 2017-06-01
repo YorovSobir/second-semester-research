@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class NodeServer implements Runnable {
@@ -24,12 +25,13 @@ public class NodeServer implements Runnable {
 
     public double totalInWeight() {
         double sum = 0.;
-        for (ClientWorker inAdj: inAdjList) {
-            if (inAdj.isClosed()) {
-                inAdjList.remove(inAdj);
+        for (Iterator<ClientWorker> it = inAdjList.iterator(); it.hasNext();) {
+            ClientWorker temp = it.next();
+            if (temp.isClosed()) {
+                it.remove();
                 continue;
             }
-            sum += inAdj.getWeightIn();
+            sum += temp.getWeightIn();
         }
         return sum;
     }

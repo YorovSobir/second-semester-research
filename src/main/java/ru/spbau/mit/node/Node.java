@@ -1,14 +1,12 @@
 package ru.spbau.mit.node;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Node implements Runnable {
-    private static double epsilon = 1.e-10;
+    private static double epsilon = 1.e-3;
     private double betta;
     private NodeServer server;
+    private boolean isBalanced = false;
     private List<NodeClient> outAdjList = new ArrayList<>();
 
     public Node(String hostName, int serverPort) {
@@ -19,10 +17,11 @@ public class Node implements Runnable {
     }
 
     public void update(HashMap<String, Integer> hosts) {
-        for (NodeClient node: outAdjList) {
+        for (Iterator<NodeClient> it = outAdjList.iterator(); it.hasNext();) {
+            NodeClient node = it.next();
             if(!hosts.containsKey(node.getHostName())) {
                 node.setClose();
-                outAdjList.remove(node);
+                it.remove();
             }
         }
         hosts.forEach(this::connectTo);
@@ -46,7 +45,8 @@ public class Node implements Runnable {
         System.out.println(server.getPort() + " total in = " + totalInWeight
                             + " total out = " + totalOutWeight);
         if (Math.abs(totalInWeight - totalOutWeight) < epsilon
-                && Math.abs(totalInWeight - 0.9) > epsilon) {
+                && Math.abs(totalInWeight) > epsilon) {
+            isBalanced = true;
             System.out.println("I'm balanced");
         }
         return isChanged;
@@ -78,7 +78,7 @@ public class Node implements Runnable {
             }
             outAdjList.forEach(NodeClient::start);
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

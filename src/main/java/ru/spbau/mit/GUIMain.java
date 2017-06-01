@@ -6,7 +6,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.SoftBevelBorder;
 import java.awt.*;
-import java.util.HashMap;
+import java.util.*;
+import java.util.List;
 
 
 public class GUIMain {
@@ -17,6 +18,9 @@ public class GUIMain {
     private JTextField port = new JTextField();
     private JButton runButton = new JButton("connect");
     private JButton runServer = new JButton("run");
+    private List<JLabel> labelList = new ArrayList<>();
+    private JFrame frameLabel = null;
+    private JFrame frame = null;
 
     public HashMap<String, Integer> getHosts() {
         return hosts;
@@ -31,7 +35,8 @@ public class GUIMain {
     }
 
     private void createGUI() {
-        JFrame frame = new JFrame("Distributed Real Balancing");
+
+        frame = new JFrame("Strong connectivity");
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setPreferredSize(new Dimension(500, 500));
@@ -130,7 +135,8 @@ public class GUIMain {
                 hosts.put(hostArray[i], Integer.parseInt(portArray[i]));
             }
 
-            node_.update(hosts);
+//            node_.update(hosts);
+            updateLabelFrame();
         });
 
         runServer.addActionListener(e -> {
@@ -144,5 +150,25 @@ public class GUIMain {
             createNode(host.getText(), Integer.parseInt(port.getText()));
         });
 
+    }
+
+    private void updateLabelFrame() {
+        labelList.clear();
+        if (frameLabel == null) {
+            frameLabel = new JFrame("result");
+            frameLabel.setLocationRelativeTo(frame);
+            frameLabel.setPreferredSize(new Dimension(200, 200));
+            frameLabel.setMinimumSize(new Dimension(200, 200));
+        }
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        hosts.forEach((host, port) -> {
+                    JLabel label = new JLabel(host + " " + port);
+                    label.setName(host + " " + port);
+                    labelList.add(label);
+                    panel.add(label);
+        });
+        frameLabel.setContentPane(panel);
+        frameLabel.setVisible(true);
     }
 }

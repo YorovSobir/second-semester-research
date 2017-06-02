@@ -135,7 +135,7 @@ public class GUIMain {
                 hosts.put(hostArray[i], Integer.parseInt(portArray[i]));
             }
 
-//            node_.update(hosts);
+            node_.update(hosts);
             updateLabelFrame();
         });
 
